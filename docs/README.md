@@ -160,10 +160,17 @@ integrator needs to touch to point the app at a restaurant's MySQL
 instance:
 
 ```properties
-db.url=jdbc:mysql://localhost:3306/restaurant_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+db.url=jdbc:mysql://localhost:3306/restaurant_db?useSSL=false&allowPublicKeyRetrieval=true
 db.username=root
 db.password=CHANGE_ME
 ```
+
+Do not add `serverTimezone=` to this URL. MySQL Connector/J auto-detects the
+server's actual timezone when the parameter is omitted; hardcoding it (e.g.
+to `UTC`) while the MySQL server itself runs on `SYSTEM` time causes every
+timestamp read through JDBC to be shifted by the server's UTC offset (all
+order/bill timestamps display hours off from the real time). Leave it unset
+so this works correctly regardless of which timezone a restaurant is in.
 
 Edit `src/main/resources/app.properties` for server-level settings:
 
