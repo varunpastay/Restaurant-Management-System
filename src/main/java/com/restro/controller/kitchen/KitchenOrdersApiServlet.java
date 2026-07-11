@@ -56,7 +56,7 @@ public class KitchenOrdersApiServlet extends HttpServlet {
                 .append("\"tableNo\":").append(JsonUtil.quote(order.getTableNo())).append(",")
                 .append("\"status\":").append(JsonUtil.quote(order.getStatus().name())).append(",")
                 .append("\"customerNote\":").append(JsonUtil.quote(order.getCustomerNote())).append(",")
-                .append("\"createdAt\":").append(JsonUtil.quote(String.valueOf(order.getCreatedAt()))).append(",")
+                .append("\"createdAt\":").append(JsonUtil.quote(JsonUtil.toIsoInstant(order.getCreatedAt()))).append(",")
                 .append("\"items\":[");
         List<OrderItemDTO> items = order.getItems();
         for (int i = 0; i < items.size(); i++) {

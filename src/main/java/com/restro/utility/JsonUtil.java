@@ -1,5 +1,8 @@
 package com.restro.utility;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 /**
  * Minimal, dependency-free JSON string escaping for hand-built AJAX
  * responses. No JSON library is in the approved stack, and every response
@@ -11,6 +14,27 @@ package com.restro.utility;
 public final class JsonUtil {
 
     private JsonUtil() {
+    }
+
+    /**
+     * Converts a DB timestamp to an unambiguous, UTC-marked ISO string
+     * (e.g. "2026-07-11T10:53:00Z") for the browser's JavaScript to parse
+     * with {@code new Date(...)}. A bare {@code LocalDateTime.toString()}
+     * has no timezone marker, so the browser assumes it's already in the
+     * browser's own local time - harmless when the app server and browser
+     * happen to share a timezone (true for local dev on one machine), but
+     * wrong once they don't (a cloud-hosted server and a customer's phone),
+     * which showed up as kitchen/counter order ages reading hours off.
+     * {@code ZoneId.systemDefault()} is whatever timezone this JVM's clock
+     * actually is (matches what produced the value via {@code now()} at
+     * insert time), so this is correct regardless of which timezone the
+     * server happens to run in.
+     */
+    public static String toIsoInstant(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toString();
     }
 
     public static String escape(String value) {

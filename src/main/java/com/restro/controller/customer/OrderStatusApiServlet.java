@@ -49,7 +49,7 @@ public class OrderStatusApiServlet extends HttpServlet {
                 }
                 OrderStatusHistoryDTO h = history.get(i);
                 json.append("{\"status\":").append(JsonUtil.quote(h.getStatus().name()))
-                        .append(",\"changedAt\":").append(JsonUtil.quote(String.valueOf(h.getChangedAt())))
+                        .append(",\"changedAt\":").append(JsonUtil.quote(JsonUtil.toIsoInstant(h.getChangedAt())))
                         .append("}");
             }
             json.append("]}");

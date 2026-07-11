@@ -45,7 +45,7 @@ public class CounterOrdersApiServlet extends HttpServlet {
                         .append("\"tableNo\":").append(JsonUtil.quote(order.getTableNo())).append(",")
                         .append("\"itemCount\":").append(order.getItems().size()).append(",")
                         .append("\"grandTotal\":").append(order.getGrandTotal()).append(",")
-                        .append("\"createdAt\":").append(JsonUtil.quote(String.valueOf(order.getCreatedAt())))
+                        .append("\"createdAt\":").append(JsonUtil.quote(JsonUtil.toIsoInstant(order.getCreatedAt())))
                         .append("}");
             }
             json.append("]}");
