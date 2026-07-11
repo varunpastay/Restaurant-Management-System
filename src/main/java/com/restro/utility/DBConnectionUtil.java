@@ -69,6 +69,21 @@ public final class DBConnectionUtil {
         url = props.getProperty("db.url");
         username = props.getProperty("db.username");
         password = props.getProperty("db.password");
+
+        // Cloud hosts (Railway, Render, etc.) inject DB connection info as
+        // environment variables rather than a properties file - override
+        // with those when present, so the same WAR/image works unmodified
+        // both locally (db.properties) and in a container (env vars).
+        if (System.getenv("DB_URL") != null) {
+            url = System.getenv("DB_URL");
+        }
+        if (System.getenv("DB_USERNAME") != null) {
+            username = System.getenv("DB_USERNAME");
+        }
+        if (System.getenv("DB_PASSWORD") != null) {
+            password = System.getenv("DB_PASSWORD");
+        }
+
         int initialSize = ValidationUtil.parseIntOrDefault(props.getProperty("db.pool.initialSize"), 5);
         maxPoolSize = ValidationUtil.parseIntOrDefault(props.getProperty("db.pool.maxSize"), 20);
         connectionTimeoutSeconds =
@@ -90,6 +105,30 @@ public final class DBConnectionUtil {
         }
         initialized = true;
         LOG.info("DB connection pool initialized: initialSize=" + initialSize + ", maxSize=" + maxPoolSize);
+    }
+
+    /** Resolved JDBC URL (db.properties, overridden by env var DB_URL if set) - used by DatabaseBackupUtil. */
+    static String getUrl() {
+        if (!initialized) {
+            initialize();
+        }
+        return url;
+    }
+
+    /** Resolved DB username (db.properties, overridden by env var DB_USERNAME if set) - used by DatabaseBackupUtil. */
+    static String getUsername() {
+        if (!initialized) {
+            initialize();
+        }
+        return username;
+    }
+
+    /** Resolved DB password (db.properties, overridden by env var DB_PASSWORD if set) - used by DatabaseBackupUtil. */
+    static String getPassword() {
+        if (!initialized) {
+            initialize();
+        }
+        return password;
     }
 
     /**

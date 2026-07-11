@@ -1,0 +1,35 @@
+# Local end-to-end test of the same container image + env-var wiring a cloud
+# host (Railway, Render, etc.) would use. Run: docker compose up --build
+# Then open http://localhost:8081/menu?table=1&token=a1e6f9c2b3d84e0f9a1c2b3d4e5f6071
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: change_me
+      MYSQL_DATABASE: restaurant_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./sql/seed-data.sql:/docker-entrypoint-initdb.d/2-seed-data.sql
+    ports:
+      - "3306:3306"
+
+  app:
+    build: .
+    ports:
+      - "8081:8080"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/restaurant_db?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      DB_USERNAME: root
+      DB_PASSWORD: change_me
+      UPLOAD_DIR: /data/uploads
+      APP_BASE_URL: http://localhost:8081
+    volumes:
+      - uploads-data:/data/uploads
+    depends_on:
+      - mysql
+
+volumes:
+  mysql-data:
+  uploads-data:

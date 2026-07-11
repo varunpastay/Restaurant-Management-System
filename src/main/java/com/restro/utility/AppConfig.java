@@ -37,12 +37,22 @@ public final class AppConfig {
     }
 
     public static String get(String key) {
-        ensureLoaded();
-        return PROPS.getProperty(key);
+        return get(key, null);
     }
 
+    /**
+     * Looks up {@code key}, but an environment variable wins if set - e.g.
+     * {@code upload.dir} can be overridden by env var {@code UPLOAD_DIR}.
+     * Cloud hosts (Railway, Render, etc.) configure containers via
+     * environment variables rather than editing a properties file, so this
+     * lets the same WAR/image run unmodified both locally and in a container.
+     */
     public static String get(String key, String defaultValue) {
         ensureLoaded();
+        String envValue = System.getenv(key.toUpperCase().replace('.', '_'));
+        if (envValue != null) {
+            return envValue;
+        }
         return PROPS.getProperty(key, defaultValue);
     }
 

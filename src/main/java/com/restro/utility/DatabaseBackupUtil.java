@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Properties;
 
 /**
  * Wraps the {@code mysqldump}/{@code mysql} command-line tools for the
@@ -81,22 +80,19 @@ public final class DatabaseBackupUtil {
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    private static DbConnectionInfo readConnectionInfo() throws IOException {
-        Properties props = new Properties();
-        try (InputStream in = DatabaseBackupUtil.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (in == null) {
-                throw new IOException("db.properties not found on classpath");
-            }
-            props.load(in);
-        }
-        String jdbcUrl = props.getProperty("db.url");
+    private static DbConnectionInfo readConnectionInfo() {
+        // Reads through DBConnectionUtil rather than db.properties directly, so this
+        // picks up the same DB_URL/DB_USERNAME/DB_PASSWORD env var overrides the
+        // connection pool uses - otherwise backup/restore would silently target the
+        // wrong database on a host configured purely via environment variables.
+        String jdbcUrl = DBConnectionUtil.getUrl();
         URI uri = URI.create(jdbcUrl.substring("jdbc:".length()).split("\\?")[0]);
         DbConnectionInfo info = new DbConnectionInfo();
         info.host = uri.getHost();
         info.port = uri.getPort() > 0 ? uri.getPort() : 3306;
         info.database = uri.getPath().substring(1);
-        info.username = props.getProperty("db.username");
-        info.password = props.getProperty("db.password");
+        info.username = DBConnectionUtil.getUsername();
+        info.password = DBConnectionUtil.getPassword();
         return info;
     }
 
