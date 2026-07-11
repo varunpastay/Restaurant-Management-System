@@ -30,6 +30,7 @@ USE restaurant_db;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS uploaded_file;
 DROP TABLE IF EXISTS order_status_history;
 DROP TABLE IF EXISTS payment;
 DROP TABLE IF EXISTS order_item;
@@ -53,6 +54,23 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Admin > Settings at runtime - nothing in this table should ever require a
 -- code change or redeploy to update.
 -- =============================================================================
+-- =============================================================================
+-- uploaded_file: stores uploaded image bytes (logos, banners, category/food
+-- photos, generated QR codes) in the database rather than on local disk, so
+-- the app has no filesystem state and needs no persistent volume - every
+-- other table already references these by the same "/uploads/<subdir>/<file>"
+-- relative_path string a filesystem path would have used, so no other table
+-- or DAO needed to change when this moved off disk.
+-- =============================================================================
+CREATE TABLE uploaded_file (
+    file_id         INT AUTO_INCREMENT PRIMARY KEY,
+    relative_path   VARCHAR(255)  NOT NULL,
+    content_type    VARCHAR(100)  NOT NULL,
+    data            LONGBLOB      NOT NULL,
+    created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_uploadedfile_path UNIQUE (relative_path)
+) ENGINE=InnoDB;
+
 CREATE TABLE restaurant (
     restaurant_id           INT AUTO_INCREMENT PRIMARY KEY,
     name                    VARCHAR(150)  NOT NULL,

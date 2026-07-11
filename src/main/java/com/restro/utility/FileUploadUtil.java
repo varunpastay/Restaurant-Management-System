@@ -1,36 +1,43 @@
 package com.restro.utility;
 
+import com.restro.dao.UploadedFileDao;
+import com.restro.daoimpl.UploadedFileDaoImpl;
+
 import jakarta.servlet.http.Part;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Saves uploaded image parts (logos, banners, category/food photos) under
- * the configurable {@code upload.dir} (see app.properties), which is kept
- * outside the deployed WAR so redeploys never wipe restaurant content. Only
+ * Saves uploaded image parts (logos, banners, category/food photos) into the
+ * {@code uploaded_file} table rather than the local filesystem, so the app
+ * has no on-disk state and needs no persistent volume when deployed. Only
  * the web-servable relative path ("/uploads/&lt;subdir&gt;/&lt;file&gt;") is
- * ever stored in the database - never the raw filesystem path.
+ * ever stored on the owning entity (food_item, category, ...) - never the
+ * bytes themselves - see ImageServingServlet for how that path is resolved
+ * back to bytes on read.
  */
 public final class FileUploadUtil {
 
     private static final AppLogger LOG = AppLogger.getLogger(FileUploadUtil.class);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
+    private static final Map<String, String> CONTENT_TYPES = Map.of(
+            "jpg", "image/jpeg", "jpeg", "image/jpeg", "png", "image/png", "webp", "image/webp");
     private static final long MAX_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+
+    private static final UploadedFileDao uploadedFileDao = new UploadedFileDaoImpl();
 
     private FileUploadUtil() {
     }
 
     /**
-     * Saves an uploaded image under upload.dir/{subdirectory}/ with a random
+     * Saves an uploaded image under "/uploads/{subdirectory}/" with a random
      * filename. Returns null if the part is empty (the user didn't choose a
      * file) so callers can distinguish "no new file" from "clear the image."
      */
@@ -59,15 +66,15 @@ public final class FileUploadUtil {
                             + "even though the filename looked right).");
         }
 
-        Path targetDir = Paths.get(AppConfig.get("upload.dir"), subdirectory);
-        Files.createDirectories(targetDir);
+        String relativePath = "/uploads/" + subdirectory + "/" + UUID.randomUUID() + "." + extension;
+        try {
+            uploadedFileDao.insert(relativePath, CONTENT_TYPES.get(extension), content);
+        } catch (SQLException e) {
+            throw new IOException("Failed to save uploaded image to the database", e);
+        }
 
-        String storedFileName = UUID.randomUUID() + "." + extension;
-        Path targetPath = targetDir.resolve(storedFileName);
-        Files.write(targetPath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-        LOG.info("Saved upload to " + targetPath);
-        return "/uploads/" + subdirectory + "/" + storedFileName;
+        LOG.info("Saved upload " + relativePath);
+        return relativePath;
     }
 
     /**
@@ -99,11 +106,10 @@ public final class FileUploadUtil {
         if (relativePath == null || relativePath.isBlank() || !relativePath.startsWith("/uploads/")) {
             return;
         }
-        Path path = Paths.get(AppConfig.get("upload.dir"), relativePath.substring("/uploads/".length()));
         try {
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            LOG.warn("Failed to delete upload file " + path, e);
+            uploadedFileDao.deleteByPath(relativePath);
+        } catch (SQLException e) {
+            LOG.warn("Failed to delete upload " + relativePath, e);
         }
     }
 
@@ -116,9 +122,12 @@ public final class FileUploadUtil {
             token = token.trim();
             if (token.startsWith("filename")) {
                 String name = token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
-                // Paths.get(...).getFileName() strips any directory component the browser
-                // might have sent, so a crafted "../../evil.jpg" can't escape the upload dir.
-                return Paths.get(name).getFileName().toString();
+                // java.nio.file.Paths.get(...).getFileName() would strip a directory
+                // component the browser might have sent; since the name is only ever
+                // used to read its extension below (never as a filesystem path
+                // anymore), a plain slash-split is enough to discard any such prefix.
+                int lastSlash = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+                return lastSlash >= 0 ? name.substring(lastSlash + 1) : name;
             }
         }
         return "";

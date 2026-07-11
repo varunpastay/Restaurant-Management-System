@@ -1,58 +1,58 @@
 # Deployment
 
-The app is packaged as a Docker image (`Dockerfile` in the project root) that
-runs on any Docker-capable host. This doc covers **Railway** (recommended -
-one-click real MySQL, no code changes needed) and **Render** (works, but
-needs an external MySQL since Render has no managed MySQL of its own).
+The app is packaged as a Docker image (`Dockerfile` in the project root) and
+is fully **stateless** - uploaded images (food photos, category images,
+logo, banner, generated QR codes) are stored in the `uploaded_file` database
+table rather than on local disk, so there's no persistent volume to manage
+and any free compute tier works, including ones that don't offer a
+persistent disk at all.
 
-Account creation and clicking through each platform's dashboard is something
-only you can do - this doc gives you the exact values to enter at each step.
+This doc covers **Render** (app) + **TiDB Cloud Starter** (database) - both
+have a genuine free tier with no credit card required and no time-of-day
+restrictions, which is why they're the recommended combo here over
+Railway (free tier blocks deploys 8am-8pm) or Oracle Cloud (Always Free
+tier requires a credit card for identity verification).
 
 ## Environment variables the container reads
 
-Set via `db.properties`/`app.properties` for local dev.
-
 | Env var | Overrides | Example value |
 |---|---|---|
-| `DB_URL` | `db.url` | `jdbc:mysql://<host>:<port>/<db>?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8` |
-| `DB_USERNAME` | `db.username` | `root` |
+| `DB_URL` | `db.url` | `jdbc:mysql://<host>:<port>/<db>?useSSL=true&enabledTLSProtocols=TLSv1.2&characterEncoding=UTF-8` |
+| `DB_USERNAME` | `db.username` | `<prefix>.root` (TiDB Cloud's username format) |
 | `DB_PASSWORD` | `db.password` | (your DB password) |
-| `UPLOAD_DIR` | `upload.dir` | `/data/uploads` |
 | `APP_BASE_URL` | `app.base.url` | `https://<your-deployed-domain>` (no trailing path - the app deploys at the domain root) |
-| `PORT` | Tomcat's HTTP port | set automatically by the host; defaults to 8080 if unset |
+| `PORT` | Tomcat's HTTP port | set automatically by Render |
 
-## Option A: Railway (recommended)
+## Step 1: TiDB Cloud Starter (database)
 
-1. **Push to GitHub** (already done if you've been following along - Railway deploys from a GitHub repo).
-2. On [railway.app](https://railway.app), **New Project → Deploy from GitHub repo**, pick this repo. Railway detects the `Dockerfile` automatically.
-3. In the same project, **+ New → Database → Add MySQL**. Railway provisions a real MySQL instance and exposes `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE` as variables on that MySQL service.
-4. On the **app service → Variables**, add:
+1. Sign up at [tidbcloud.com](https://tidbcloud.com).
+2. **Create Cluster** → **Starter** (confirm $0/month) → name it, pick a region, create.
+3. Once **Active**, click **Connect** and copy the **Host**, **Port** (`4000`), **User** (format `<prefix>.root`), and generate/save a **Password**.
+4. Build your `DB_URL`:
    ```
-   DB_URL=jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-   DB_USERNAME=${{MySQL.MYSQLUSER}}
-   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
-   UPLOAD_DIR=/data/uploads
-   APP_BASE_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
+   jdbc:mysql://<host>:4000/restaurant_db?useSSL=true&enabledTLSProtocols=TLSv1.2&characterEncoding=UTF-8
    ```
-   (The `${{ServiceName.VAR}}` syntax is Railway's cross-service variable reference - it resolves automatically, you don't fill in real values yourself.)
-5. **App service → Settings → Volumes → New Volume**, mount path `/data/uploads`. Without this, every redeploy wipes uploaded food/category photos, logo, banner, and QR codes.
-6. **Load the schema**: MySQL service → **Data** tab (or connect with any MySQL client using the connection details Railway shows) → run `sql/schema.sql` then `sql/seed-data.sql` from this repo, in that order.
-7. **Set real admin/staff passwords** (the seeded rows have placeholder hashes that can't log in, by design - see `docs/README.md` §5.3): run `java -cp target/classes com.restro.utility.PasswordHashGeneratorTool` locally, then run the printed `UPDATE` statement against the Railway MySQL database for `admin` and each `staff` row.
-8. **App service → Settings → Networking → Generate Domain**. Railway builds the Dockerfile and deploys automatically on every push to `main`.
-9. Generate QR codes from Admin → Tables & QR *after* `APP_BASE_URL` is set correctly, so the encoded URL points at your real domain.
+5. Load the schema: run `sql/schema.sql` then `sql/seed-data.sql` against the cluster (TiDB Cloud's **SQL Editor** in the console, or any MySQL client pointed at the host/port/user/password above with TLS enabled - TiDB Cloud rejects plain connections).
+6. Set real admin/staff passwords (seeded rows have placeholder hashes by design - see `docs/README.md` §5.3): run `java -cp target/classes com.restro.utility.PasswordHashGeneratorTool` locally, then run the printed `UPDATE` against `admin` and each `staff` row on the TiDB cluster.
 
-## Option B: Render + external MySQL
+## Step 2: Render (app)
 
-Render has no managed MySQL, so provision MySQL elsewhere first - Railway's
-MySQL plugin (step 3 above, without deploying the app there) or a free-tier
-Aiven/PlanetScale MySQL both work, since the driver just needs a standard
-`jdbc:mysql://` endpoint.
+1. Sign up at [render.com](https://render.com) - no credit card required for the free tier.
+2. **New → Web Service → Build and deploy from a Git repository**, pick this repo. Render detects the `Dockerfile` automatically.
+3. Instance type: **Free** is fine - no disk is needed since the app is stateless.
+4. **Environment** tab, add:
+   ```
+   DB_URL=jdbc:mysql://<your-tidb-host>:4000/restaurant_db?useSSL=true&enabledTLSProtocols=TLSv1.2&characterEncoding=UTF-8
+   DB_USERNAME=<your-tidb-user>
+   DB_PASSWORD=<your-tidb-password>
+   APP_BASE_URL=https://<will be shown after first deploy - Render assigns a *.onrender.com domain>
+   ```
+   Deploy once to get your Render domain, then come back and set `APP_BASE_URL` to it, then redeploy (Manual Deploy → Deploy latest commit) so it takes effect.
+5. Generate QR codes from Admin → Tables & QR *after* `APP_BASE_URL` is set correctly, so the encoded URL points at your real domain.
 
-1. **New → Web Service → Build and deploy from a Git repository**, pick this repo. Render detects the `Dockerfile`.
-2. Instance type: must be a **paid** plan to attach a persistent Disk (Free tier has no persistent disk - every deploy wipes `/data/uploads`).
-3. **Settings → Disks → Add Disk**, mount path `/data/uploads`.
-4. **Environment** tab, add the same `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` / `UPLOAD_DIR=/data/uploads` / `APP_BASE_URL` variables as above, pointed at your external MySQL's real host/port/credentials (Render can't cross-reference a database it doesn't manage, so these are literal values here, not `${{...}}` references).
-5. Same schema-load and password-setup steps as Railway, above.
+Note: Render's free tier spins the service down after periods of inactivity
+and takes a few seconds to wake back up on the next request - fine for a
+demo/low-traffic deployment, but worth knowing about.
 
 ## Testing the container locally first (optional, needs Docker installed)
 
@@ -61,7 +61,7 @@ docker compose up --build
 ```
 
 Brings up MySQL (auto-loads `sql/schema.sql` + `sql/seed-data.sql` on first
-run) and the app together, wired with the same env vars a cloud host would
-use. Open `http://localhost:8081/menu?table=1&token=a1e6f9c2b3d84e0f9a1c2b3d4e5f6071`.
+run) and the app together. Open
+`http://localhost:8081/menu?table=1&token=a1e6f9c2b3d84e0f9a1c2b3d4e5f6071`.
 Passwords still need to be set per §5.3 of `docs/README.md` before staff/admin
 login works.

@@ -1,6 +1,8 @@
 package com.restro.controller.common;
 
-import com.restro.utility.AppConfig;
+import com.restro.dao.UploadedFileDao;
+import com.restro.daoimpl.UploadedFileDaoImpl;
+import com.restro.dto.UploadedFileDTO;
 import com.restro.utility.AppLogger;
 
 import jakarta.servlet.annotation.WebServlet;
@@ -10,21 +12,19 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.SQLException;
 
 /**
  * Streams uploaded images (logos, banners, category/food photos, generated
- * QR codes) from the configurable upload.dir, which lives outside the
- * deployed WAR and therefore isn't reachable by the container's default
- * static file serving. Falls back to a small inline placeholder SVG if the
- * file is missing, so a never-uploaded image never shows as a broken-image icon.
+ * QR codes) from the uploaded_file table. Falls back to a small inline
+ * placeholder SVG if the path isn't found, so a never-uploaded image never
+ * shows as a broken-image icon.
  */
 @WebServlet(name = "ImageServingServlet", urlPatterns = {"/uploads/*"})
 public class ImageServingServlet extends HttpServlet {
 
     private static final AppLogger LOG = AppLogger.getLogger(ImageServingServlet.class);
+    private final UploadedFileDao uploadedFileDao = new UploadedFileDaoImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -34,17 +34,22 @@ public class ImageServingServlet extends HttpServlet {
             return;
         }
 
-        Path root = Paths.get(AppConfig.get("upload.dir")).normalize();
-        Path file = root.resolve(pathInfo.substring(1)).normalize();
-        if (!file.startsWith(root) || !Files.exists(file) || !Files.isRegularFile(file)) {
+        UploadedFileDTO file;
+        try {
+            file = uploadedFileDao.findByPath("/uploads" + pathInfo);
+        } catch (SQLException e) {
+            LOG.error("Failed to look up uploaded file " + pathInfo, e);
+            servePlaceholder(response);
+            return;
+        }
+        if (file == null) {
             servePlaceholder(response);
             return;
         }
 
-        String contentType = Files.probeContentType(file);
-        response.setContentType(contentType != null ? contentType : "application/octet-stream");
+        response.setContentType(file.getContentType());
         response.setHeader("Cache-Control", "public, max-age=3600");
-        Files.copy(file, response.getOutputStream());
+        response.getOutputStream().write(file.getData());
     }
 
     private void servePlaceholder(HttpServletResponse response) {

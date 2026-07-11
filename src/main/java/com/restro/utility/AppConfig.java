@@ -5,11 +5,10 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Deployment-level configuration (app.properties) - upload directory, public
- * base URL used to build QR payloads, mysql client binary location, etc.
- * Restaurant branding/business settings (name, logo, GST, tax %...) are
- * NOT here; they live in the {@code restaurant} DB table, see the
- * settings service/DAO once the customization module lands.
+ * Deployment-level configuration (app.properties) - public base URL used to
+ * build QR payloads, mysql client binary location, etc. Restaurant
+ * branding/business settings (name, logo, GST, tax %...) are NOT here; they
+ * live in the {@code restaurant} DB table, see the settings service/DAO.
  */
 public final class AppConfig {
 
@@ -42,7 +41,7 @@ public final class AppConfig {
 
     /**
      * Looks up {@code key}, but an environment variable wins if set - e.g.
-     * {@code upload.dir} can be overridden by env var {@code UPLOAD_DIR}.
+     * {@code app.base.url} can be overridden by env var {@code APP_BASE_URL}.
      * Cloud hosts (Railway, Render, etc.) configure containers via
      * environment variables rather than editing a properties file, so this
      * lets the same WAR/image run unmodified both locally and in a container.
