@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Restaurant QR Ordering and Management System</display-name>
+
+    <!-- Container-level default encoding (Servlet 4.0+/Jakarta EE feature).
+         This is the actual fix for multipart/form-data fields (restaurant
+         name, notes, etc.) containing non-ASCII characters (₹, accented
+         names, ...) - EncodingFilter's request.setCharacterEncoding() call
+         does NOT reliably apply to Tomcat's multipart field parsing, which
+         resolves its encoding before filters matching /* run for a
+         multipart body. Declaring it here at the container level is what
+         Tomcat's multipart parser actually honors. -->
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+
+    <!-- ==================================================================
+         Application bootstrap: loads db.properties / app.properties,
+         initializes the JDBC connection pool and app-wide config on startup,
+         and shuts the pool down cleanly on undeploy.
+         ================================================================== -->
+    <listener>
+        <listener-class>com.restro.listeners.AppContextListener</listener-class>
+    </listener>
+
+    <!-- ==================================================================
+         Cross-cutting filters. Order matters: encoding must run before
+         anything reads request parameters; exception handling wraps
+         everything below it so no servlet can leak a stack trace to the client.
+         Auth filters are added in later modules once login exists.
+         ================================================================== -->
+    <filter>
+        <filter-name>EncodingFilter</filter-name>
+        <filter-class>com.restro.filters.EncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>ExceptionHandlingFilter</filter-name>
+        <filter-class>com.restro.filters.ExceptionHandlingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ExceptionHandlingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>StaffAuthFilter</filter-name>
+        <filter-class>com.restro.filters.StaffAuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>StaffAuthFilter</filter-name>
+        <url-pattern>/kitchen/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>StaffAuthFilter</filter-name>
+        <url-pattern>/counter/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AdminAuthFilter</filter-name>
+        <filter-class>com.restro.filters.AdminAuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AdminAuthFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
+
+    <session-config>
+        <session-timeout>60</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/jsp/common/error-404.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/jsp/common/error-500.jsp</location>
+    </error-page>
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/jsp/common/error-500.jsp</location>
+    </error-page>
+
+    <!-- Uploaded images (logos, banners, food photos) are served from a
+         configurable filesystem path, not necessarily inside the WAR; see
+         com.restro.utility.AppConfig / app.properties (upload.dir). A
+         dedicated servlet mapped to /uploads/* streams them - added when
+         the upload feature lands (Module 4/9), declared here at that point. -->
+
+</web-app>

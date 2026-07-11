@@ -1,0 +1,22 @@
+<%-- Shared <head> assets (Bootstrap 5, Bootstrap Icons, theme CSS) reused by every module's pages.
+     Expects the including page to have optionally placed a `restaurant` RestaurantDTO in request scope;
+     falls back to the default brand color when it hasn't (e.g. the invalid-table error page). --%>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendor/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/vendor/bootstrap-icons/bootstrap-icons.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/theme.css">
+<style>
+    :root { --brand: ${empty restaurant ? '#c0392b' : restaurant.themeColor}; }
+</style>
+<script>
+    // Applied synchronously (before body paint) so a stored dark-mode preference
+    // never flashes the wrong theme on navigation between customer pages.
+    (function () {
+        var stored = localStorage.getItem('theme');
+        if (stored) {
+            document.documentElement.setAttribute('data-bs-theme', stored);
+        }
+    })();
+</script>

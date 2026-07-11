@@ -1,0 +1,99 @@
+<%-- Shared admin sidebar. Expects `activeNav` (a string key) to be set by the including page so the current section highlights. --%>
+<header class="admin-topbar py-2 px-3 align-items-center justify-content-between">
+    <button type="button" id="adminSidebarToggle" class="btn btn-outline-brand btn-sm" aria-label="Open menu" aria-expanded="false" aria-controls="adminSidebar">
+        <i class="bi bi-list fs-5"></i>
+    </button>
+    <a href="${pageContext.request.contextPath}/admin/dashboard" class="d-flex align-items-center text-decoration-none">
+        <i class="bi bi-shop brand-text me-2"></i>
+        <span class="fw-bold">Admin Panel</span>
+    </a>
+    <span style="width:38px;"></span>
+</header>
+<div id="adminSidebarBackdrop" class="admin-sidebar-backdrop"></div>
+
+<div id="adminSidebar" class="d-flex flex-column flex-shrink-0 p-3 admin-sidebar" style="width:230px; min-height:100vh;">
+    <a href="${pageContext.request.contextPath}/admin/dashboard" class="d-flex align-items-center mb-3 text-decoration-none">
+        <i class="bi bi-shop brand-text fs-4 me-2"></i>
+        <span class="fw-bold">Admin Panel</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-link ${activeNav == 'dashboard' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/settings" class="nav-link ${activeNav == 'settings' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-gear me-2"></i> Restaurant Settings
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/categories" class="nav-link ${activeNav == 'categories' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-tags me-2"></i> Categories
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/food" class="nav-link ${activeNav == 'food' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-egg-fried me-2"></i> Food Items
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/tables" class="nav-link ${activeNav == 'tables' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-grid-3x3 me-2"></i> Tables &amp; QR
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/staff" class="nav-link ${activeNav == 'staff' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-people me-2"></i> Staff
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/reports" class="nav-link ${activeNav == 'reports' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-graph-up me-2"></i> Sales Reports
+            </a>
+        </li>
+        <li>
+            <a href="${pageContext.request.contextPath}/admin/backup" class="nav-link ${activeNav == 'backup' ? 'active' : 'link-body-emphasis'}">
+                <i class="bi bi-database me-2"></i> Backup &amp; Restore
+            </a>
+        </li>
+    </ul>
+    <hr>
+    <div class="small text-muted-brand mb-2">${fn:escapeXml(sessionScope.adminFullName)}</div>
+    <a href="${pageContext.request.contextPath}/admin/logout" class="btn btn-outline-brand btn-sm">
+        <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+</div>
+
+<script>
+    (function () {
+        var sidebar = document.getElementById('adminSidebar');
+        var backdrop = document.getElementById('adminSidebarBackdrop');
+        var toggleBtn = document.getElementById('adminSidebarToggle');
+
+        function closeSidebar() {
+            sidebar.classList.remove('show');
+            backdrop.classList.remove('show');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        function openSidebar() {
+            sidebar.classList.add('show');
+            backdrop.classList.add('show');
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        toggleBtn.addEventListener('click', function () {
+            if (sidebar.classList.contains('show')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+        backdrop.addEventListener('click', closeSidebar);
+        sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+            link.addEventListener('click', closeSidebar);
+        });
+    })();
+</script>
