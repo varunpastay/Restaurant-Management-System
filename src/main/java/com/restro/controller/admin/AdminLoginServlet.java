@@ -39,20 +39,20 @@ public class AdminLoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String username = request.getParameter("username");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        if (ValidationUtil.isBlank(username) || ValidationUtil.isBlank(password)) {
-            showError(request, response, "Please enter both username and password.");
+        if (ValidationUtil.isBlank(email) || ValidationUtil.isBlank(password)) {
+            showError(request, response, "Please enter both email and password.");
             return;
         }
 
         try {
-            AdminDTO admin = adminDao.findByUsername(username.trim());
+            AdminDTO admin = adminDao.findByEmail(email.trim());
             if (admin == null || !admin.isActive()
                     || !PasswordUtil.matches(password, admin.getPasswordHash(), admin.getPasswordSalt())) {
-                LOG.warn("Failed admin login attempt for username=" + username);
-                showError(request, response, "Invalid username or password.");
+                LOG.warn("Failed admin login attempt for email=" + email);
+                showError(request, response, "Invalid email or password.");
                 return;
             }
 
@@ -67,7 +67,7 @@ public class AdminLoginServlet extends HttpServlet {
             session.setAttribute(AdminAuthFilter.SESSION_ADMIN_NAME, admin.getFullName());
 
             adminDao.updateLastLogin(admin.getAdminId(), LocalDateTime.now());
-            LOG.info("Admin login: " + admin.getUsername());
+            LOG.info("Admin login: " + admin.getEmail());
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
         } catch (SQLException e) {
             LOG.error("Admin login failed due to a database error", e);

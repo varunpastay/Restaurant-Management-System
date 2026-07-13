@@ -16,7 +16,7 @@ import java.util.List;
 public class StaffDaoImpl implements StaffDao {
 
     private static final String SELECT_BASE =
-            "SELECT staff_id, restaurant_id, username, password_hash, password_salt, full_name, role, phone, " +
+            "SELECT staff_id, restaurant_id, email, password_hash, password_salt, full_name, role, phone, " +
             "is_active, created_at FROM staff ";
 
     @Override
@@ -31,7 +31,7 @@ public class StaffDaoImpl implements StaffDao {
                     StaffDTO s = new StaffDTO();
                     s.setStaffId(rs.getInt("staff_id"));
                     s.setRestaurantId(rs.getInt("restaurant_id"));
-                    s.setUsername(rs.getString("username"));
+                    s.setEmail(rs.getString("email"));
                     s.setPasswordHash(rs.getString("password_hash"));
                     s.setPasswordSalt(rs.getString("password_salt"));
                     s.setFullName(rs.getString("full_name"));
@@ -59,7 +59,7 @@ public class StaffDaoImpl implements StaffDao {
                 StaffDTO s = new StaffDTO();
                 s.setStaffId(rs.getInt("staff_id"));
                 s.setRestaurantId(rs.getInt("restaurant_id"));
-                s.setUsername(rs.getString("username"));
+                s.setEmail(rs.getString("email"));
                 s.setPasswordHash(rs.getString("password_hash"));
                 s.setPasswordSalt(rs.getString("password_salt"));
                 s.setFullName(rs.getString("full_name"));
@@ -73,11 +73,11 @@ public class StaffDaoImpl implements StaffDao {
     }
 
     @Override
-    public StaffDTO findByUsername(String username) throws SQLException {
-        String sql = SELECT_BASE + "WHERE username = ?";
+    public StaffDTO findByEmail(String email) throws SQLException {
+        String sql = SELECT_BASE + "WHERE email = ?";
         try (Connection conn = DBConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, username);
+            ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return null;
@@ -85,7 +85,7 @@ public class StaffDaoImpl implements StaffDao {
                 StaffDTO s = new StaffDTO();
                 s.setStaffId(rs.getInt("staff_id"));
                 s.setRestaurantId(rs.getInt("restaurant_id"));
-                s.setUsername(rs.getString("username"));
+                s.setEmail(rs.getString("email"));
                 s.setPasswordHash(rs.getString("password_hash"));
                 s.setPasswordSalt(rs.getString("password_salt"));
                 s.setFullName(rs.getString("full_name"));
@@ -100,12 +100,12 @@ public class StaffDaoImpl implements StaffDao {
 
     @Override
     public int insert(StaffDTO s) throws SQLException {
-        String sql = "INSERT INTO staff (restaurant_id, username, password_hash, password_salt, full_name, " +
+        String sql = "INSERT INTO staff (restaurant_id, email, password_hash, password_salt, full_name, " +
                 "role, phone, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, s.getRestaurantId());
-            ps.setString(2, s.getUsername());
+            ps.setString(2, s.getEmail());
             ps.setString(3, s.getPasswordHash());
             ps.setString(4, s.getPasswordSalt());
             ps.setString(5, s.getFullName());
@@ -121,11 +121,11 @@ public class StaffDaoImpl implements StaffDao {
 
     @Override
     public boolean update(StaffDTO s) throws SQLException {
-        String sql = "UPDATE staff SET username = ?, full_name = ?, role = ?, phone = ?, is_active = ? " +
+        String sql = "UPDATE staff SET email = ?, full_name = ?, role = ?, phone = ?, is_active = ? " +
                 "WHERE staff_id = ?";
         try (Connection conn = DBConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, s.getUsername());
+            ps.setString(1, s.getEmail());
             ps.setString(2, s.getFullName());
             ps.setString(3, s.getRole().name());
             ps.setString(4, s.getPhone());

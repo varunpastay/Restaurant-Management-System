@@ -36,7 +36,7 @@ public final class PasswordHashGeneratorTool {
         System.out.println();
         System.out.println("Example SQL to set the seeded admin's real password:");
         System.out.println("UPDATE admin SET password_hash = '" + hash + "', password_salt = '" + salt
-                + "' WHERE username = 'admin';");
+                + "' WHERE email = 'owner@spicerouteBistro.example';");
     }
 
     private static String readPassword(String[] args) {

@@ -29,8 +29,8 @@
                             <input type="text" name="fullName" class="form-control" value="${fn:escapeXml(editing.fullName)}" required>
                         </div>
                         <div class="col-md-4 mb-2">
-                            <label class="form-label small">Username *</label>
-                            <input type="text" name="username" class="form-control" value="${fn:escapeXml(editing.username)}" required>
+                            <label class="form-label small">Email *</label>
+                            <input type="email" name="email" class="form-control" value="${fn:escapeXml(editing.email)}" required>
                         </div>
                         <div class="col-md-4 mb-2">
                             <label class="form-label small">${not empty editing ? 'New Password (leave blank to keep current)' : 'Password *'}</label>
@@ -72,12 +72,12 @@
         <c:if test="${not empty staffList}">
         <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Status</th><th></th></tr></thead>
             <tbody>
             <c:forEach items="${staffList}" var="s">
                 <tr>
                     <td>${fn:escapeXml(s.fullName)}</td>
-                    <td>${fn:escapeXml(s.username)}</td>
+                    <td>${fn:escapeXml(s.email)}</td>
                     <td><span class="badge text-bg-secondary">${s.role}</span></td>
                     <td>${fn:escapeXml(s.phone)}</td>
                     <td><span class="badge ${s.active ? 'text-bg-success' : 'text-bg-secondary'}">${s.active ? 'Active' : 'Inactive'}</span></td>

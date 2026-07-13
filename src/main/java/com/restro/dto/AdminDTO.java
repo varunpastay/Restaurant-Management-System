@@ -8,7 +8,6 @@ public class AdminDTO implements Serializable {
 
     private int adminId;
     private int restaurantId;
-    private String username;
     private String passwordHash;
     private String passwordSalt;
     private String fullName;
@@ -31,14 +30,6 @@ public class AdminDTO implements Serializable {
 
     public void setRestaurantId(int restaurantId) {
         this.restaurantId = restaurantId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPasswordHash() {

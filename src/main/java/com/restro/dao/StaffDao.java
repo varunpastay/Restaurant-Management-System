@@ -11,7 +11,7 @@ public interface StaffDao {
 
     StaffDTO findById(int staffId) throws SQLException;
 
-    StaffDTO findByUsername(String username) throws SQLException;
+    StaffDTO findByEmail(String email) throws SQLException;
 
     int insert(StaffDTO staff) throws SQLException;
 

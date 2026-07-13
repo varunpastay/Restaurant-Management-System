@@ -13,15 +13,15 @@ import java.time.LocalDateTime;
 public class AdminDaoImpl implements AdminDao {
 
     private static final String SELECT_BASE =
-            "SELECT admin_id, restaurant_id, username, password_hash, password_salt, full_name, email, " +
+            "SELECT admin_id, restaurant_id, email, password_hash, password_salt, full_name, " +
             "is_active, last_login_at, created_at FROM admin ";
 
     @Override
-    public AdminDTO findByUsername(String username) throws SQLException {
-        String sql = SELECT_BASE + "WHERE username = ?";
+    public AdminDTO findByEmail(String email) throws SQLException {
+        String sql = SELECT_BASE + "WHERE email = ?";
         try (Connection conn = DBConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, username);
+            ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return null;
@@ -29,11 +29,10 @@ public class AdminDaoImpl implements AdminDao {
                 AdminDTO a = new AdminDTO();
                 a.setAdminId(rs.getInt("admin_id"));
                 a.setRestaurantId(rs.getInt("restaurant_id"));
-                a.setUsername(rs.getString("username"));
+                a.setEmail(rs.getString("email"));
                 a.setPasswordHash(rs.getString("password_hash"));
                 a.setPasswordSalt(rs.getString("password_salt"));
                 a.setFullName(rs.getString("full_name"));
-                a.setEmail(rs.getString("email"));
                 a.setActive(rs.getBoolean("is_active"));
                 a.setLastLoginAt(JdbcUtil.toLocalDateTime(rs.getTimestamp("last_login_at")));
                 a.setCreatedAt(JdbcUtil.toLocalDateTime(rs.getTimestamp("created_at")));
@@ -55,11 +54,10 @@ public class AdminDaoImpl implements AdminDao {
                 AdminDTO a = new AdminDTO();
                 a.setAdminId(rs.getInt("admin_id"));
                 a.setRestaurantId(rs.getInt("restaurant_id"));
-                a.setUsername(rs.getString("username"));
+                a.setEmail(rs.getString("email"));
                 a.setPasswordHash(rs.getString("password_hash"));
                 a.setPasswordSalt(rs.getString("password_salt"));
                 a.setFullName(rs.getString("full_name"));
-                a.setEmail(rs.getString("email"));
                 a.setActive(rs.getBoolean("is_active"));
                 a.setLastLoginAt(JdbcUtil.toLocalDateTime(rs.getTimestamp("last_login_at")));
                 a.setCreatedAt(JdbcUtil.toLocalDateTime(rs.getTimestamp("created_at")));

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public interface AdminDao {
 
-    AdminDTO findByUsername(String username) throws SQLException;
+    AdminDTO findByEmail(String email) throws SQLException;
 
     AdminDTO findById(int adminId) throws SQLException;
 

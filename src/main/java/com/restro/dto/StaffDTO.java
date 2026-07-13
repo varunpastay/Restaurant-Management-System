@@ -8,7 +8,7 @@ public class StaffDTO implements Serializable {
 
     private int staffId;
     private int restaurantId;
-    private String username;
+    private String email;
     private String passwordHash;
     private String passwordSalt;
     private String fullName;
@@ -33,12 +33,12 @@ public class StaffDTO implements Serializable {
         this.restaurantId = restaurantId;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPasswordHash() {

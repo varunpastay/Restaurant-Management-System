@@ -23,8 +23,8 @@
             </c:if>
             <form method="post" action="${pageContext.request.contextPath}/admin/login">
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus autocomplete="username">
+                    <label class="form-label small fw-semibold">Email</label>
+                    <input type="email" name="email" class="form-control" required autofocus autocomplete="email">
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-semibold">Password</label>

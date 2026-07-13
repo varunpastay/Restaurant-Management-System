@@ -49,7 +49,7 @@ erDiagram
     ADMIN {
         int admin_id PK
         int restaurant_id FK
-        varchar username UK
+        varchar email UK
         varchar password_hash
         varchar password_salt
         varchar full_name
@@ -58,7 +58,7 @@ erDiagram
     STAFF {
         int staff_id PK
         int restaurant_id FK
-        varchar username UK
+        varchar email UK
         varchar password_hash
         varchar password_salt
         varchar full_name

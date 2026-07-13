@@ -111,8 +111,8 @@
                                     </c:forEach>
                                     <small class="text-muted-brand"><i class="bi bi-clock"></i> ${item.prepTimeMinutes} min</small>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
+                                <div class="food-card-footer">
+                                    <div class="food-card-price">
                                         <c:if test="${item.offerPrice != null}">
                                             <div class="price-strike">${restaurant.currencySymbol}${item.price}</div>
                                         </c:if>
@@ -120,7 +120,7 @@
                                     </div>
                                     <div class="add-control" data-food-item-id="${item.foodItemId}">
                                         <button type="button" class="btn btn-brand btn-sm add-btn" ${!restaurant.open ? 'disabled' : ''}>
-                                            <i class="bi bi-plus-lg"></i> Add
+                                            <i class="bi bi-plus-lg"></i> <span class="add-btn-label">Add</span>
                                         </button>
                                         <div class="qty-stepper d-none btn-group btn-group-sm">
                                             <button type="button" class="btn btn-outline-brand dec-btn">-</button>

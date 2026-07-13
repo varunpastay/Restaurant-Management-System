@@ -189,8 +189,10 @@ mysql.bin.dir=
 
 ### 5.3 Set real admin/staff passwords
 
-The seeded `admin`, `kitchen1`, and `counter1` rows ship with placeholder
-password hashes that **cannot log in**. Generate real ones:
+The seeded admin (`owner@spicerouteBistro.example`) and staff
+(`kitchen@spicerouteBistro.example`, `counter@spicerouteBistro.example`)
+rows ship with placeholder password hashes that **cannot log in**. Generate
+real ones:
 
 ```sh
 mvn compile
@@ -199,7 +201,8 @@ java -cp target/classes com.restro.utility.PasswordHashGeneratorTool
 ```
 
 It prints a ready-to-run `UPDATE` statement — run it against your database
-for `admin`, and again for each staff username you want to activate.
+for the admin, and again (adjusting the `WHERE email = '...'` clause) for
+each staff account you want to activate. Login is by email, not username.
 
 ### 5.4 Build and deploy
 
@@ -316,10 +319,10 @@ Only valid **after** running the `PasswordHashGeneratorTool` step above and
 applying the printed `UPDATE` with your own chosen passwords — the seeded
 rows have no working password out of the box, by design.
 
-| Role | Username |
+| Role | Email |
 |---|---|
-| Admin | `admin` |
-| Kitchen | `kitchen1` |
-| Counter | `counter1` |
+| Admin | `owner@spicerouteBistro.example` |
+| Kitchen | `kitchen@spicerouteBistro.example` |
+| Counter | `counter@spicerouteBistro.example` |
 
 **Change or remove these accounts before going live.**

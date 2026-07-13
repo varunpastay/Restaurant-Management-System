@@ -29,19 +29,19 @@ SET @restaurant_id = LAST_INSERT_ID();
 -- -----------------------------------------------------------------------------
 -- admin
 -- -----------------------------------------------------------------------------
-INSERT INTO admin (restaurant_id, username, password_hash, password_salt, full_name, email, is_active)
+INSERT INTO admin (restaurant_id, email, password_hash, password_salt, full_name, is_active)
 VALUES
-    (@restaurant_id, 'admin', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
-     'Restaurant Owner', 'owner@spicerouteBistro.example', 1);
+    (@restaurant_id, 'owner@spicerouteBistro.example', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
+     'Restaurant Owner', 1);
 
 -- -----------------------------------------------------------------------------
 -- staff (one kitchen login, one counter login)
 -- -----------------------------------------------------------------------------
-INSERT INTO staff (restaurant_id, username, password_hash, password_salt, full_name, role, phone, is_active)
+INSERT INTO staff (restaurant_id, email, password_hash, password_salt, full_name, role, phone, is_active)
 VALUES
-    (@restaurant_id, 'kitchen1', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
+    (@restaurant_id, 'kitchen@spicerouteBistro.example', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
      'Kitchen Staff', 'KITCHEN', '+91-9000000001', 1),
-    (@restaurant_id, 'counter1', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
+    (@restaurant_id, 'counter@spicerouteBistro.example', 'SEED_PLACEHOLDER_HASH', 'SEED_PLACEHOLDER_SALT',
      'Counter Staff', 'COUNTER', '+91-9000000002', 1);
 
 -- -----------------------------------------------------------------------------

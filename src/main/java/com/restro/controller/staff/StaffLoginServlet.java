@@ -39,21 +39,21 @@ public class StaffLoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String username = request.getParameter("username");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
         String redirect = request.getParameter("redirect");
 
-        if (ValidationUtil.isBlank(username) || ValidationUtil.isBlank(password)) {
-            showError(request, response, "Please enter both username and password.", redirect);
+        if (ValidationUtil.isBlank(email) || ValidationUtil.isBlank(password)) {
+            showError(request, response, "Please enter both email and password.", redirect);
             return;
         }
 
         try {
-            StaffDTO staff = staffDao.findByUsername(username.trim());
+            StaffDTO staff = staffDao.findByEmail(email.trim());
             if (staff == null || !staff.isActive()
                     || !PasswordUtil.matches(password, staff.getPasswordHash(), staff.getPasswordSalt())) {
-                LOG.warn("Failed staff login attempt for username=" + username);
-                showError(request, response, "Invalid username or password.", redirect);
+                LOG.warn("Failed staff login attempt for email=" + email);
+                showError(request, response, "Invalid email or password.", redirect);
                 return;
             }
 
@@ -74,7 +74,7 @@ public class StaffLoginServlet extends HttpServlet {
             };
             String target = (redirect != null && redirect.startsWith(landingPage.substring(0, landingPage.lastIndexOf('/'))))
                     ? redirect : landingPage;
-            LOG.info("Staff login: " + staff.getUsername() + " (" + staff.getRole() + ")");
+            LOG.info("Staff login: " + staff.getEmail() + " (" + staff.getRole() + ")");
             response.sendRedirect(request.getContextPath() + target);
         } catch (SQLException e) {
             LOG.error("Staff login failed due to a database error", e);

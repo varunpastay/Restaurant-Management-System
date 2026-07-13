@@ -321,11 +321,36 @@ a:hover, a:focus { color: color-mix(in srgb, var(--brand) 80%, black); }
     min-height: 2.3em;
 }
 
+/* ---------- Food card price + add-button row ---------- */
+/* flex-wrap is the safety net: on a narrow 2-column mobile grid, the price
+   and the Add button/stepper can together exceed the card's content width.
+   Flex items never shrink below their own content size by default, so
+   without wrap they'd silently overlap instead of visibly breaking - this
+   showed up as the "+ Add" button drawn on top of the price text on real
+   phones (~320-360px cards). Wrapping lets the control drop to its own line
+   as a fallback, but the sizing fixes below mean that should rarely trigger. */
+.food-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 6px;
+}
+.food-card-price {
+    min-width: 0;
+    flex-shrink: 1;
+}
+.add-control {
+    flex-shrink: 0;
+}
+
 /* ---------- Add / quantity stepper controls ---------- */
 .add-btn {
     border-radius: var(--radius-pill);
-    padding: 6px 18px;
+    padding: 6px 14px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .qty-stepper {
@@ -334,7 +359,7 @@ a:hover, a:focus { color: color-mix(in srgb, var(--brand) 80%, black); }
     box-shadow: var(--shadow-sm);
 }
 .qty-stepper button {
-    width: 32px;
+    width: 30px;
     height: 32px;
     line-height: 1;
     display: inline-flex;
@@ -343,10 +368,18 @@ a:hover, a:focus { color: color-mix(in srgb, var(--brand) 80%, black); }
     font-weight: 700;
 }
 .qty-stepper .qty-display {
-    min-width: 28px;
+    min-width: 24px;
     font-weight: 700;
     background-color: var(--surface-card);
     border-color: var(--brand);
+}
+
+/* Below ~360px a card's content column is tight enough that even the
+   trimmed button can crowd the price - drop the "Add" text and keep just
+   the + icon so the button never needs more than ~34px. */
+@media (max-width: 359.98px) {
+    .add-btn-label { display: none; }
+    .add-btn { padding: 6px 10px; }
 }
 
 /* ---------- Sticky cart bar ---------- */

@@ -100,15 +100,14 @@ CREATE TABLE restaurant (
 CREATE TABLE admin (
     admin_id        INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_id   INT NOT NULL,
-    username        VARCHAR(50)   NOT NULL,
+    email           VARCHAR(150)  NOT NULL,
     password_hash   VARCHAR(255)  NOT NULL,
     password_salt   VARCHAR(255)  NOT NULL,
     full_name       VARCHAR(150)  NULL,
-    email           VARCHAR(150)  NULL,
     is_active       TINYINT(1)    NOT NULL DEFAULT 1,
     last_login_at   TIMESTAMP     NULL,
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_admin_username UNIQUE (username),
+    CONSTRAINT uq_admin_email UNIQUE (email),
     CONSTRAINT fk_admin_restaurant FOREIGN KEY (restaurant_id)
         REFERENCES restaurant (restaurant_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -122,7 +121,7 @@ CREATE TABLE admin (
 CREATE TABLE staff (
     staff_id        INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_id   INT NOT NULL,
-    username        VARCHAR(50)   NOT NULL,
+    email           VARCHAR(150)  NOT NULL,
     password_hash   VARCHAR(255)  NOT NULL,
     password_salt   VARCHAR(255)  NOT NULL,
     full_name       VARCHAR(150)  NULL,
@@ -130,7 +129,7 @@ CREATE TABLE staff (
     phone           VARCHAR(20)   NULL,
     is_active       TINYINT(1)    NOT NULL DEFAULT 1,
     created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_staff_username UNIQUE (username),
+    CONSTRAINT uq_staff_email UNIQUE (email),
     CONSTRAINT fk_staff_restaurant FOREIGN KEY (restaurant_id)
         REFERENCES restaurant (restaurant_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

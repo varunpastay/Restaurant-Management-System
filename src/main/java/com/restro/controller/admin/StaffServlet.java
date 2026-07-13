@@ -64,7 +64,7 @@ public class StaffServlet extends HttpServlet {
                 default -> LOG.warn("Unknown staff action: " + action);
             }
         } catch (java.sql.SQLIntegrityConstraintViolationException e) {
-            FlashUtil.setError(session, "That username is already taken.");
+            FlashUtil.setError(session, "That email is already taken.");
         } catch (SQLException e) {
             throw new ServletException("Failed to update staff", e);
         }
@@ -73,13 +73,13 @@ public class StaffServlet extends HttpServlet {
 
     private void handleSave(HttpServletRequest request, HttpSession session) throws SQLException {
         int staffId = ValidationUtil.parseIntOrDefault(request.getParameter("staffId"), 0);
-        String username = request.getParameter("username");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
         String fullName = request.getParameter("fullName");
         String roleParam = request.getParameter("role");
 
-        if (ValidationUtil.isBlank(username) || ValidationUtil.isBlank(fullName) || ValidationUtil.isBlank(roleParam)) {
-            FlashUtil.setError(session, "Username, full name, and role are all required.");
+        if (ValidationUtil.isBlank(email) || ValidationUtil.isBlank(fullName) || ValidationUtil.isBlank(roleParam)) {
+            FlashUtil.setError(session, "Email, full name, and role are all required.");
             return;
         }
         if (staffId == 0 && ValidationUtil.isBlank(password)) {
@@ -95,7 +95,7 @@ public class StaffServlet extends HttpServlet {
                 FlashUtil.setError(session, "Staff member not found.");
                 return;
             }
-            existing.setUsername(username.trim());
+            existing.setEmail(email.trim());
             existing.setFullName(fullName.trim());
             existing.setPhone(request.getParameter("phone"));
             existing.setRole(role);
@@ -111,7 +111,7 @@ public class StaffServlet extends HttpServlet {
             String salt = PasswordUtil.generateSalt();
             StaffDTO staff = new StaffDTO();
             staff.setRestaurantId(restaurant.getRestaurantId());
-            staff.setUsername(username.trim());
+            staff.setEmail(email.trim());
             staff.setFullName(fullName.trim());
             staff.setPhone(request.getParameter("phone"));
             staff.setRole(role);

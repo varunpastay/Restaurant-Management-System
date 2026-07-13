@@ -21,8 +21,8 @@
             <form method="post" action="${pageContext.request.contextPath}/staff/login">
                 <input type="hidden" name="redirect" value="${fn:escapeXml(redirect)}">
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus>
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required autofocus autocomplete="email">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
